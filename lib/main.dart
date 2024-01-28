@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:foodie/core/services/shared_prefs_service.dart';
 import 'package:foodie/pages/loader_page/loader_page.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +21,7 @@ class Application extends StatelessWidget {
       useInheritedMediaQuery: true,
       designSize: const Size(390, 844),
       builder: (context, child) {
-        return MaterialApp(
+        return GetMaterialApp(
           title: 'Foodie',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),

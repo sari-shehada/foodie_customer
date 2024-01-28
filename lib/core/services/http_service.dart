@@ -7,7 +7,8 @@ import '../extensions/maps_extensions/map_extensions.dart';
 import 'package:dio/dio.dart';
 
 class HttpService {
-  static const String baseUrl = ''; //TODO:
+  // static const String baseUrl = 'http://192.168.43.224:8000';
+  static const String baseUrl = 'http://192.168.1.7:8000';
 
   static bool requestJsonFormattingByDefault = true;
 
