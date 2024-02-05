@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:foodie/cart_helper/cart_helper.dart';
 import 'package:foodie/core/services/http_service.dart';
 import 'package:foodie/core/widgets/custom_future_builder.dart';
 import 'package:foodie/pages/home_page/models/meal_category.dart';
 import 'package:foodie/pages/home_page/models/restaurant.dart';
 import 'package:foodie/pages/home_page/widgets/category_card_widget.dart';
+import 'package:foodie/pages/home_page/widgets/home_page_drawer.dart';
 import 'package:foodie/pages/home_page/widgets/restaurant_card_widget.dart';
 
 class HomePage extends StatefulWidget {
@@ -28,105 +30,89 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // endDrawer: MyDrawer(), //TODO:
-      body: Directionality(
-        textDirection: TextDirection.ltr,
-        child: Column(
-          children: [
-            const SizedBox(
-              width: 20.0,
+      drawer: const HomePageDrawer(),
+      appBar: AppBar(
+        titleSpacing: 0,
+        foregroundColor: Colors.orange,
+        title: Container(
+          padding: EdgeInsets.only(left: 15.0.w),
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(25.0),
+          ),
+          child: const TextField(
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: "Search",
+              suffixIcon: Icon(Icons.search),
             ),
-            Container(
-              padding: const EdgeInsets.all(15.0),
-              child: Row(
-                children: <Widget>[
-                  GestureDetector(
-                    //TODO:
-                    // onTap: () {
-                    //   KeyDrawer.currentState!.openEndDrawer();
-                    // },
-                    child: const Icon(
-                      Icons.menu,
-                      color: Colors.orange,
-                      size: 40.0,
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.only(left: 10.0),
-                      decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(25.0)),
-                      child: const TextField(
-                          decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: "search",
-                              suffixIcon: Icon(Icons.search))),
-                    ),
-                  ),
-                ],
-              ),
+          ),
+        ),
+        actions: const [
+          HomePageCartIconWidget(),
+        ],
+      ),
+      body: Column(
+        children: [
+          Container(
+            width: MediaQuery.of(context).size.width,
+            height: 140.0.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 20,
+                  offset: Offset(0, 30.h),
+                ),
+              ],
             ),
-            Container(
+            child: CustomFutureBuilder(
+              future: futureCategories,
+              builder: (context, categories) {
+                return ListView.builder(
+                  itemCount: categories.length,
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                  ),
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  itemBuilder: (BuildContext context, int index) {
+                    return CategoryCardWidget(
+                      category: categories[index],
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          Expanded(
+            child: Container(
+              alignment: Alignment.bottomLeft,
               width: MediaQuery.of(context).size.width,
-              height: 140.0.h,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 20,
-                    offset: Offset(0, 30.h),
-                  ),
-                ],
-              ),
+              height: 320.0,
               child: CustomFutureBuilder(
-                future: futureCategories,
-                builder: (context, categories) {
+                future: futureRestaurants,
+                builder: (context, restaurants) {
                   return ListView.builder(
-                    itemCount: categories.length,
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10.w,
-                    ),
+                    itemCount: restaurants.length,
                     physics: const AlwaysScrollableScrollPhysics(
                       parent: BouncingScrollPhysics(),
                     ),
-                    itemBuilder: (BuildContext context, int index) {
-                      return CategoryCardWidget(
-                        category: categories[index],
+                    scrollDirection: Axis.vertical,
+                    itemBuilder: (BuildContext context, index) {
+                      return RestaurantCardWidget(
+                        restaurant: restaurants[index],
                       );
                     },
                   );
                 },
               ),
             ),
-            Expanded(
-              child: Container(
-                alignment: Alignment.bottomLeft,
-                width: MediaQuery.of(context).size.width,
-                height: 320.0,
-                child: CustomFutureBuilder(
-                  future: futureRestaurants,
-                  builder: (context, restaurants) {
-                    return ListView.builder(
-                      itemCount: restaurants.length,
-                      physics: const AlwaysScrollableScrollPhysics(
-                        parent: BouncingScrollPhysics(),
-                      ),
-                      scrollDirection: Axis.vertical,
-                      itemBuilder: (BuildContext context, index) {
-                        return RestaurantCardWidget(
-                          restaurant: restaurants[index],
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
@@ -182,6 +168,48 @@ class _HomePageState extends State<HomePage> {
     return HttpService.parsedMultiGet(
       endPoint: 'restaurants/',
       mapper: Restaurant.fromMap,
+    );
+  }
+}
+
+class HomePageCartIconWidget extends StatefulWidget {
+  const HomePageCartIconWidget({super.key});
+
+  @override
+  State<HomePageCartIconWidget> createState() => _CartHomePageIconStateWidget();
+}
+
+class _CartHomePageIconStateWidget extends State<HomePageCartIconWidget> {
+  int cartItems = 0;
+  @override
+  void initState() {
+    updateCartItemsQTY();
+    CartHelper.instance.addListener(() {
+      if (mounted) {
+        updateCartItemsQTY();
+        setState(() {});
+      }
+    });
+    super.initState();
+  }
+
+  void updateCartItemsQTY() {
+    cartItems = CartHelper.instance.mealsInCart.keys.length;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: Badge(
+        label: Text(
+          cartItems.toString(),
+        ),
+        isLabelVisible: cartItems != 0,
+        child: const Icon(
+          Icons.shopping_cart,
+        ),
+      ),
+      onPressed: () {},
     );
   }
 }

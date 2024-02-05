@@ -11,6 +11,7 @@ import 'package:foodie/core/services/snackbar_service.dart';
 import 'package:foodie/pages/home_page/home_page.dart';
 import 'package:foodie/pages/login_page/models/login_form_data.dart';
 import 'package:foodie/pages/login_page/models/user_info.dart';
+import 'package:foodie/pages/sign_up_page/sign_up_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -30,14 +31,6 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0.0,
-        leading: IconButton(
-            onPressed: () {
-              Navigator.of(context).pop(context);
-            },
-            icon: const Icon(
-              Icons.arrow_back_ios,
-              color: Colors.black,
-            )),
       ),
       body: Container(
         margin: const EdgeInsets.all(10.0),
@@ -121,10 +114,10 @@ class _LoginPageState extends State<LoginPage> {
                 const Padding(padding: EdgeInsets.all(10.0)),
                 GestureDetector(
                   onTap: () {
-                    // Navigator.push(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //         builder: (context) => const Register()));
+                    NavigationService.push(
+                      context,
+                      const SignUpPage(),
+                    );
                   },
                   child: const Text("Sign up",
                       style: TextStyle(

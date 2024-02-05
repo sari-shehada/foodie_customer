@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:foodie/config/colors.dart';
 import 'package:foodie/core/services/http_service.dart';
+import 'package:foodie/core/services/navigation_service.dart';
 import 'package:foodie/core/widgets/custom_future_builder.dart';
 import 'package:foodie/pages/home_page/models/restaurant.dart';
+import 'package:foodie/pages/meal_page/meal_page.dart';
 import 'package:foodie/pages/restaurant_page/models/meal.dart';
 import 'package:foodie/pages/restaurant_page/models/restaurant_meals.dart';
 import 'package:foodie/pages/restaurant_page/widgets/restaurant_contact_info_widget.dart';
@@ -70,7 +72,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
                       iconData: Icons.phone,
                       number: widget.restaurant.landLine!,
                       onButtonTap: () => UrlLauncherService.openPhoneDialer(
-                        phoneNumber: widget.restaurant.landLine,
+                        phoneNumber: '011${widget.restaurant.landLine}',
                       ),
                     ),
                 ],
@@ -117,9 +119,22 @@ class _RestaurantPageState extends State<RestaurantPage> {
                             mealsCategory.meals.length,
                             (index1) {
                               Meal meal = mealsCategory.meals[index1];
-                              return ListTile(
-                                leading: Image.network(meal.image),
-                                title: Text(meal.name),
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 3),
+                                child: ListTile(
+                                  onTap: () => NavigationService.push(
+                                    context,
+                                    MealPage(
+                                      mealId: meal.id,
+                                    ),
+                                  ),
+                                  leading: ClipRRect(
+                                    borderRadius: BorderRadius.circular(5.r),
+                                    child: Image.network(meal.image),
+                                  ),
+                                  title: Text(meal.name),
+                                ),
                               );
                             },
                           ),

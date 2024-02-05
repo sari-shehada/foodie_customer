@@ -36,6 +36,10 @@ class SharedPreferencesService {
     return plugin.getBool(key);
   }
 
+  String? getString(String key) {
+    return plugin.getString(key);
+  }
+
   int? getInt(String key) {
     return plugin.getInt(key);
   }

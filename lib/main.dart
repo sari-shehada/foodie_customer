@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:foodie/cart_helper/cart_helper.dart';
 import 'package:foodie/core/services/shared_prefs_service.dart';
 import 'package:foodie/pages/loader_page/loader_page.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
@@ -7,6 +8,7 @@ import 'package:get/get_navigation/src/root/get_material_app.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPreferencesService.init();
+  CartHelper.init();
   await ScreenUtil.ensureScreenSize();
   runApp(const Application());
 }

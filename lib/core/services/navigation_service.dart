@@ -16,4 +16,12 @@ class NavigationService {
       ),
     );
   }
+
+  static pushReplacement(BuildContext context, Widget page) {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => page,
+      ),
+    );
+  }
 }
