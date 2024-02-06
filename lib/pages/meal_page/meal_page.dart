@@ -38,6 +38,7 @@ class _MealPageState extends State<MealPage> {
           return MealPageBody(
             meal: meal,
             rateMealCallback: () => rateMeal(meal),
+            toggleFavoriteCallback: () => toggleMealInFavorites(meal),
           );
         },
       ),
@@ -79,6 +80,25 @@ class _MealPageState extends State<MealPage> {
       },
       mapper: UserMeal.fromJson,
     );
+  }
+
+  Future<void> toggleMealInFavorites(UserMeal meal) async {
+    try {
+      var response = await HttpService.rawFullResponsePost(
+        endPoint: 'meals/${meal.meal.id}/toggleFavorite/',
+        body: {
+          'userId': SharedPreferencesService.instance.getInt('userId'),
+        },
+      );
+      if (response.statusCode == 200) {
+        futureMeal = getMealDetails();
+        setState(() {});
+        return;
+      }
+      SnackBarService.showErrorSnackbar(response.body);
+    } catch (e) {
+      SnackBarService.showErrorSnackbar('Error Occurred');
+    }
   }
 }
 
@@ -128,7 +148,7 @@ class _MealRatingDialogState extends State<MealRatingDialog> {
               Navigator.pop(context, rating);
             },
             child: const Text(
-              'Submit Rting',
+              'Submit Rating',
             ),
           ),
         ],
@@ -142,10 +162,12 @@ class MealPageBody extends StatefulWidget {
     super.key,
     required this.meal,
     required this.rateMealCallback,
+    required this.toggleFavoriteCallback,
   });
 
   final UserMeal meal;
   final VoidCallback rateMealCallback;
+  final VoidCallback toggleFavoriteCallback;
 
   @override
   State<MealPageBody> createState() => _MealPageBodyState();
@@ -190,14 +212,36 @@ class _MealPageBodyState extends State<MealPageBody> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      clipBehavior: Clip.hardEdge,
-                      child: Image.network(
-                        widget.meal.meal.image,
-                        fit: BoxFit.contain,
+                    child: SizedBox.square(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        clipBehavior: Clip.hardEdge,
+                        child: Stack(
+                          alignment: Alignment.topRight,
+                          fit: StackFit.passthrough,
+                          children: [
+                            Image.network(
+                              widget.meal.meal.image,
+                              fit: BoxFit.contain,
+                            ),
+                            Positioned(
+                              top: 7,
+                              right: 7,
+                              child: IconButton(
+                                onPressed: widget.toggleFavoriteCallback,
+                                icon: Icon(
+                                  Icons.favorite,
+                                  size: 35.sp,
+                                  color: widget.meal.isInFavorites
+                                      ? Colors.orange
+                                      : null,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

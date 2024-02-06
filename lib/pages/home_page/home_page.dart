@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:foodie/cart_helper/cart_helper.dart';
 import 'package:foodie/core/services/http_service.dart';
+import 'package:foodie/core/services/navigation_service.dart';
 import 'package:foodie/core/widgets/custom_future_builder.dart';
+import 'package:foodie/pages/cart_page/cart_page.dart';
 import 'package:foodie/pages/home_page/models/meal_category.dart';
 import 'package:foodie/pages/home_page/models/restaurant.dart';
 import 'package:foodie/pages/home_page/widgets/category_card_widget.dart';
 import 'package:foodie/pages/home_page/widgets/home_page_drawer.dart';
 import 'package:foodie/pages/home_page/widgets/restaurant_card_widget.dart';
+import 'package:foodie/pages/search_results_page/search_results_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -40,12 +43,19 @@ class _HomePageState extends State<HomePage> {
             color: Colors.grey[200],
             borderRadius: BorderRadius.circular(25.0),
           ),
-          child: const TextField(
-            decoration: InputDecoration(
+          child: TextField(
+            decoration: const InputDecoration(
               border: InputBorder.none,
               hintText: "Search",
               suffixIcon: Icon(Icons.search),
             ),
+            textInputAction: TextInputAction.search,
+            onSubmitted: (value) {
+              NavigationService.push(
+                context,
+                SearchResultsPage(searchTerm: value),
+              );
+            },
           ),
         ),
         actions: const [
@@ -92,7 +102,6 @@ class _HomePageState extends State<HomePage> {
             child: Container(
               alignment: Alignment.bottomLeft,
               width: MediaQuery.of(context).size.width,
-              height: 320.0,
               child: CustomFutureBuilder(
                 future: futureRestaurants,
                 builder: (context, restaurants) {
@@ -209,7 +218,10 @@ class _CartHomePageIconStateWidget extends State<HomePageCartIconWidget> {
           Icons.shopping_cart,
         ),
       ),
-      onPressed: () {},
+      onPressed: () => NavigationService.push(
+        context,
+        const CartPage(),
+      ),
     );
   }
 }
