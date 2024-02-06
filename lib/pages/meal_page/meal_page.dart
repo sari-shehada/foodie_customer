@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:foodie/cart_helper/cart_helper.dart';
 import 'package:foodie/core/services/http_service.dart';
 import 'package:foodie/core/services/shared_prefs_service.dart';
+import 'package:foodie/core/services/snackbar_service.dart';
 import 'package:foodie/core/widgets/custom_future_builder.dart';
 import 'package:foodie/pages/meal_page/models/user_meal.dart';
 
@@ -36,14 +37,38 @@ class _MealPageState extends State<MealPage> {
         builder: (context, meal) {
           return MealPageBody(
             meal: meal,
-            rateMealCallback: () => rateMeal(),
+            rateMealCallback: () => rateMeal(meal),
           );
         },
       ),
     );
   }
 
-  Future<void> rateMeal() async {}
+  Future<void> rateMeal(UserMeal meal) async {
+    var newRating = await showDialog(
+      context: context,
+      builder: (context) => MealRatingDialog(
+        oldRating: meal.myRating,
+      ),
+    );
+    if (newRating is int && newRating != meal.myRating) {
+      try {
+        var response =
+            await HttpService.rawFullResponsePost(endPoint: 'rateMeal/', body: {
+          'mealId': meal.meal.id,
+          'userId': SharedPreferencesService.instance.getInt('userId'),
+          'rating': newRating,
+        });
+        if (response.statusCode == 200) {
+          SnackBarService.showSuccessSnackbar('Rating Updated');
+          futureMeal = getMealDetails();
+          setState(() {});
+        }
+      } catch (e) {
+        SnackBarService.showErrorSnackbar('Error Occurred');
+      }
+    }
+  }
 
   Future<UserMeal> getMealDetails() async {
     int userId = SharedPreferencesService.instance.getInt('userId') ?? -1;
@@ -53,6 +78,61 @@ class _MealPageState extends State<MealPage> {
         'userId': userId.toString(),
       },
       mapper: UserMeal.fromJson,
+    );
+  }
+}
+
+class MealRatingDialog extends StatefulWidget {
+  const MealRatingDialog({
+    super.key,
+    this.oldRating,
+  });
+
+  final int? oldRating;
+  @override
+  State<MealRatingDialog> createState() => _MealRatingDialogState();
+}
+
+class _MealRatingDialogState extends State<MealRatingDialog> {
+  int rating = 0;
+
+  @override
+  void initState() {
+    rating = widget.oldRating ?? 0;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Rate the meal'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          RatingBar.builder(
+            itemCount: 5,
+            initialRating: rating.toDouble(),
+            allowHalfRating: false,
+            itemBuilder: (context, index) {
+              return const Icon(Icons.star);
+            },
+            onRatingUpdate: (value) {
+              rating = value.toInt();
+            },
+          ),
+          SizedBox(
+            height: 10.h,
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context, rating);
+            },
+            child: const Text(
+              'Submit Rting',
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -109,12 +189,17 @@ class _MealPageBodyState extends State<MealPageBody> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.r),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      clipBehavior: Clip.hardEdge,
+                      child: Image.network(
+                        widget.meal.meal.image,
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                    clipBehavior: Clip.hardEdge,
-                    child: Image.network(widget.meal.meal.image),
                   ),
                   SizedBox(
                     height: 20.h,
