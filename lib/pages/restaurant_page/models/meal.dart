@@ -5,7 +5,7 @@ class Meal {
   int id;
   String name;
   num price;
-  String? discountedPrice;
+  num? discountedPrice;
   int rating;
   String ingredients;
   int restaurant;
@@ -27,7 +27,7 @@ class Meal {
     int? id,
     String? name,
     num? price,
-    String? discountedPrice,
+    num? discountedPrice,
     int? rating,
     String? ingredients,
     int? restaurant,
@@ -61,14 +61,18 @@ class Meal {
     };
   }
 
+  int calculateTotalPrice(int qty) {
+    int finalPrice = (discountedPrice ?? price).toInt();
+    return qty * finalPrice;
+  }
+
   factory Meal.fromMap(Map<String, dynamic> map) {
     return Meal(
       id: map['id'] as int,
       name: map['name'] as String,
       price: map['price'] as num,
-      discountedPrice: map['discountedPrice'] != null
-          ? map['discountedPrice'] as String
-          : null,
+      discountedPrice:
+          map['discountedPrice'] != null ? map['discountedPrice'] as num : null,
       rating: map['rating'] as int,
       ingredients: map['ingredients'] as String,
       restaurant: map['restaurant'] as int,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:foodie/core/services/shared_prefs_service.dart';
 import 'package:foodie/core/services/snackbar_service.dart';
 import 'package:foodie/pages/restaurant_page/models/meal.dart';
@@ -45,20 +46,25 @@ class CartHelper with ChangeNotifier {
   }
 
   Future<void> addMealToCart(Meal meal, int qty) async {
+    if (qty == 0) {
+      if (mealsInCart.keys.contains(meal.id)) {
+        mealsInCart.remove(meal.id);
+        await updateAndNotify(isItemRemoved: true);
+      }
+      return;
+    }
     currentRestaurantId ??= meal.restaurant;
     if (meal.restaurant != currentRestaurantId) {
       var result = await Get.dialog(
         const ResetCartWithAnotherRestaurantConfirmationDialog(),
       );
-      if (result == false) {
+      if (result != true) {
         return;
       }
       changeRestaurant(meal.restaurant);
     }
     mealsInCart[meal.id] = qty;
-    await updateStorage();
-    SnackBarService.showSuccessSnackbar('Meal added to cart');
-    notifyListeners();
+    await updateAndNotify();
   }
 
   void changeRestaurant(int newRestaurantId) {
@@ -85,6 +91,16 @@ class CartHelper with ChangeNotifier {
     return meal.restaurant == currentRestaurantId &&
         mealsInCart.containsKey(meal.id);
   }
+
+  Future<void> updateAndNotify({
+    bool isItemRemoved = false,
+  }) async {
+    await updateStorage();
+    SnackBarService.showSuccessSnackbar(
+      'Meal ${isItemRemoved ? 'removed from' : 'added to'} cart',
+    );
+    notifyListeners();
+  }
 }
 
 class ResetCartWithAnotherRestaurantConfirmationDialog extends StatelessWidget {
@@ -92,6 +108,39 @@ class ResetCartWithAnotherRestaurantConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return AlertDialog(
+      title: const Text('Change Restaurant'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Your cart contains items from another restaurant, if you continue you will lose the items currently in your cart, would you like to proceed?',
+          ),
+          SizedBox(
+            height: 8.h,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Cancel',
+                ),
+              ),
+              SizedBox(
+                width: 10.w,
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Proceed',
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
   }
 }

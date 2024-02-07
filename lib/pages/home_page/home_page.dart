@@ -5,6 +5,7 @@ import 'package:foodie/core/services/http_service.dart';
 import 'package:foodie/core/services/navigation_service.dart';
 import 'package:foodie/core/widgets/custom_future_builder.dart';
 import 'package:foodie/pages/cart_page/cart_page.dart';
+import 'package:foodie/pages/favorites_page/favorites_page.dart';
 import 'package:foodie/pages/home_page/models/meal_category.dart';
 import 'package:foodie/pages/home_page/models/restaurant.dart';
 import 'package:foodie/pages/home_page/widgets/category_card_widget.dart';
@@ -134,33 +135,33 @@ class _HomePageState extends State<HomePage> {
         items: [
           const BottomNavigationBarItem(
             icon: Icon(
-              Icons.notifications,
+              Icons.home,
               size: 30.0,
             ),
-            label: "notifications",
+            label: "Home",
           ),
           BottomNavigationBarItem(
             icon: IconButton(
               onPressed: () {
-                // Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //         builder: ((context) => const OffersPage())));
+                NavigationService.push(
+                  context,
+                  const FavoritesPage(),
+                );
               },
               icon: const Icon(
-                Icons.restaurant_menu,
+                Icons.favorite,
                 size: 30.0,
               ),
             ),
-            label: "offers",
+            label: "Favorites",
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(
-              Icons.person,
-              size: 30.0,
-            ),
-            label: "myaccount",
-          )
+          // const BottomNavigationBarItem(
+          //   icon: Icon(
+          //     Icons.person,
+          //     size: 30.0,
+          //   ),
+          //   label: "myaccount",
+          // )
         ],
       ),
     );

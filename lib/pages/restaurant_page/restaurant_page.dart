@@ -122,19 +122,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
                               return Padding(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 3),
-                                child: ListTile(
-                                  onTap: () => NavigationService.push(
-                                    context,
-                                    MealPage(
-                                      mealId: meal.id,
-                                    ),
-                                  ),
-                                  leading: ClipRRect(
-                                    borderRadius: BorderRadius.circular(5.r),
-                                    child: Image.network(meal.image),
-                                  ),
-                                  title: Text(meal.name),
-                                ),
+                                child: MealCardWidget(meal: meal),
                               );
                             },
                           ),
@@ -155,6 +143,50 @@ class _RestaurantPageState extends State<RestaurantPage> {
     return HttpService.parsedMultiGet(
       endPoint: 'restaurants/${widget.restaurant.id}/meals/',
       mapper: RestaurantMealsCategory.fromMap,
+    );
+  }
+}
+
+class MealCardWidget extends StatelessWidget {
+  const MealCardWidget({
+    super.key,
+    required this.meal,
+  });
+
+  final Meal meal;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: () => NavigationService.push(
+        context,
+        MealPage(
+          mealId: meal.id,
+        ),
+      ),
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(5.r),
+        child: Image.network(meal.image),
+      ),
+      title: Text(meal.name),
+      trailing: meal.discountedPrice != null
+          ? Container(
+              padding: EdgeInsets.symmetric(
+                vertical: 5.h,
+                horizontal: 10.w,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6.r),
+                color: Colors.orange.withOpacity(0.15),
+              ),
+              child: Text(
+                'In Promotion',
+                style: TextStyle(
+                  color: Colors.orange.shade600,
+                ),
+              ),
+            )
+          : null,
     );
   }
 }
