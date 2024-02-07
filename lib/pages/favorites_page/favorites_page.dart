@@ -21,6 +21,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
   @override
   void initState() {
     favorites = getFavorites();
+
     super.initState();
   }
 
@@ -34,6 +35,13 @@ class _FavoritesPageState extends State<FavoritesPage> {
         child: CustomFutureBuilder(
           future: favorites,
           builder: (context, snapshot) {
+            if (snapshot.isEmpty) {
+              return const Center(
+                child: Text(
+                  'You haven\'t added any items to favorites yet',
+                ),
+              );
+            }
             return ListView.builder(
               itemCount: snapshot.length,
               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 15.h),
